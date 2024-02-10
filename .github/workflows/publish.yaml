@@ -17,6 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
       - name: Update pyproject.toml
         run: |
           poetry version ${{ github.event.inputs.version }}
