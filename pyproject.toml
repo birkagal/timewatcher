@@ -16,6 +16,9 @@ bs4 = { version = "^0.0.2", markers = "sys_platform == 'darwin'" }
 [tool.poetry.scripts]
 timewatcher = "timewatcher.app:main"
 
+[tool.poetry.urls]
+"Source" = "https://github.com/birkagal/timewatcher"
+
 
 [build-system]
 requires = ["poetry-core"]
