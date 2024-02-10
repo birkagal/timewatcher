@@ -35,6 +35,7 @@ jobs:
         uses: ad-m/github-push-action@v0.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
 
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v2.0
