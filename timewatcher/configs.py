@@ -62,7 +62,7 @@ class Config:
                 config.set(
                     consts.AUTHENTICATION,
                     option,
-                    input(colored(text, "grey")) or default,
+                    input(colored(text, "light_cyan")) or default,
                 )
 
         if config.has_section(consts.PREFERENCES) is False:
@@ -73,7 +73,7 @@ class Config:
                 config.set(
                     consts.PREFERENCES,
                     option,
-                    input(colored(text, "grey")) or default,
+                    input(colored(text, "light_cyan")) or default,
                 )
 
         if is_config_updated is True:
