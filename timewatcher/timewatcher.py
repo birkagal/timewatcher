@@ -102,7 +102,9 @@ class TimeWatcher:
 
         :return: BeatifulSoup object of the main punch page."""
 
-        res = self.session.get(self.request_headers["referer"])
+        res = self.session.get(
+            f'{consts.TIMEWATCH_BASE_URL}self.request_headers["referer"]',
+        )
         self.request_data["csrf_token"] = re.search(
             r'var csrf_token="(.*)";',
             res.content.decode(),
