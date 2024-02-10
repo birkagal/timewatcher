@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "timewatcher"
+version = "0.9.0"
+description = "Automatically update hours card on TimeWatch"
+authors = ["Gal Birka <birkagal@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+termcolor = "^2.4.0"
+pyfiglet = "^1.0.2"
+requests = "^2.31.0"
+bs4 = { version = "^0.0.2", markers = "sys_platform == 'darwin'" }
+
+[tool.poetry.scripts]
+timewatcher = "timewatcher.app:main"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
