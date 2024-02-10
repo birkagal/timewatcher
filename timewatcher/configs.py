@@ -1,6 +1,5 @@
 import os
 import re
-import typing
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -10,6 +9,9 @@ from . import consts
 
 
 class Config:
+    """Configuration manager helper class to initilize configuration
+    from well known config.ini file and exposing relevant configurations."""
+
     company_number: str
     employee_number: str
     employee_password: str
@@ -39,7 +41,11 @@ class Config:
 
     def _initilize_configs(
         self,
-    ):
+    ) -> dict[str, any]:
+        """Initilizes the configuration object from a well know location of config.ini file.
+
+        :return: a dict holding all the user configuration settings.
+        """
         config = ConfigParser()
         config.read(f"{os.path.expanduser(consts.CONFIG_FILE_PATH)}/config.ini")
         is_config_updated = False

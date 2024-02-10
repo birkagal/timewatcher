@@ -1,4 +1,4 @@
-# TimeWatch
+# TimeWatch URLs
 TIMEWATCH_USER_VALIDATION_URL = "https://c.timewatch.co.il/user/validate_user.php"
 TIMEWATCH_DATE_TABLE_URL = "https://c.timewatch.co.il/punch/editwh.php"
 TIMEWATCH_HOUR_UPDATE_URL = "https://c.timewatch.co.il/punch/editwh3.php"

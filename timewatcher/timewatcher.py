@@ -17,6 +17,9 @@ from . import data
 
 @dataclass
 class Job:
+    """Helper class to hold the data of a required date job.
+    Each job has the target date and the needed amount of hours."""
+
     needed_hours: int
     date: date
 
@@ -30,12 +33,15 @@ class TimeWatcher:
         self.request_headers = data.HEADERS
         self.request_data = data.DATA
         self.current_date = datetime.now()
-        self.ixemplee: str = ""
         self.skip_dates: set[str] = set()
 
     def _initilize_timewatch(
         self,
     ) -> None:
+        """Kickstart the Timewatch initilization process.
+        Login to the Timewatch website, and update the session referer to the
+        correct URL based on the current date."""
+
         login_soup = self._login()
         self._set_referer_header(login_soup)
         self._update_request_data()
@@ -43,6 +49,9 @@ class TimeWatcher:
     def _login(
         self,
     ) -> BeautifulSoup:
+        """Login to Timewatch using the validate_user URL and the user information.
+
+        :return: BeautifulSoup object of the homepage after signing in."""
         print(colored(consts.LOGGING_IN_TEXT, "light_blue"))
         res = self.session.post(
             consts.TIMEWATCH_USER_VALIDATION_URL,
@@ -52,13 +61,17 @@ class TimeWatcher:
                 "pw": self.config.employee_password,
             },
         )
-        # self.config.cookies['PHPSESSID'] = self.session.cookies.get('PHPSESSID')
         return BeautifulSoup(res.text, "html.parser")
 
     def _set_referer_header(
         self,
         login_soup: BeautifulSoup,
     ) -> None:
+        """Taking the BeatufilSoup object of the Timewatch homepage and extracting the
+        Punch page URL with the relevant params from it. Setting the "referer" header to that
+        URL.
+
+        :param: login_soup: BeautifulSoup object of the homepage after singning in."""
         link = next(
             link
             for link in login_soup.find_all("a", {"class": "new-link"})
@@ -66,18 +79,17 @@ class TimeWatcher:
         )
         parsed_url = urlparse(link.get("href"))
         params = parse_qs(parsed_url.query)
-        self.ixemplee = params["ee"][0] if params.get("ee") else ""
-        self.request_headers["referer"] = (
-            "https://c.timewatch.co.il/punch/editwh.php"
-            f'?ee={self.ixemplee}&e={self.config.company_number}&m={params["m"][0]}&y={params["y"][0]}'
-        )
+        ixemplee = params["ee"][0] if params.get("ee") else ""
+        self.request_data["e"] = ixemplee
+        self.request_data["tl"] = ixemplee
+        self.request_headers["referer"] = link.get("href")
 
     def _update_request_data(
         self,
     ) -> None:
+        """Update the request_data variable with user configuration information."""
+
         self.request_data["c"] = self.config.company_number
-        self.request_data["e"] = self.ixemplee
-        self.request_data["tl"] = self.ixemplee
         self.request_data["ehh0"] = self.config.start_time_hour
         self.request_data["emm0"] = self.config.start_time_minute
         self.request_data["xmm0"] = self.config.end_time_minute
@@ -85,15 +97,12 @@ class TimeWatcher:
     def _get_punch_page(
         self,
     ) -> BeautifulSoup:
-        res = self.session.get(
-            consts.TIMEWATCH_DATE_TABLE_URL,
-            params={
-                "ee": self.ixemplee,
-                "e": self.config.company_number,
-                "m": self.current_date.month,
-                "y": self.current_date.year,
-            },
-        )
+        """After successful login, browse to the main punch page.
+        Also updates the request_data with the new generated csrf_token
+
+        :return: BeatifulSoup object of the main punch page."""
+
+        res = self.session.get(self.request_headers["referer"])
         self.request_data["csrf_token"] = re.search(
             r'var csrf_token="(.*)";',
             res.content.decode(),
@@ -104,6 +113,12 @@ class TimeWatcher:
     def _get_required_dates(
         self,
     ) -> list[Job]:
+        """Using the BeatifulSoup object of the main punch page, iterate over the
+        dates table rows and find dates that need to be filled in.
+        Extract the date and required hours and store them in a Jobs list.
+
+        :return: Job list of the required dates that needs to be filled.."""
+
         punch_page = self._get_punch_page()
         jobs: list[Job] = []
         for row in punch_page.find_all("tr", {"class": "update-data"}):
@@ -136,7 +151,15 @@ class TimeWatcher:
         jobs: list[Job],
         retries=0,
     ) -> None:
-        if retries > 5:
+        """Iterate over the jobs list and fill the required hours for each job.
+        Call itself recusively if not all the jobs have been filled. Can be called
+        up to a maximum of 5 retries before failing.
+
+        :param jobs: List of jobs that require filling up.
+        :param retreis: Number of retries that attempted to fulfill the jobs list."""
+
+        MAX_RETRIES = 5
+        if retries > MAX_RETRIES:
             print(colored(consts.MAX_RETIRES_TEXT, "red"))
             return
         if len(jobs) == 0:
@@ -157,7 +180,7 @@ class TimeWatcher:
             job_date = job.date.strftime(self.config.date_format)
             if job_date not in self.skip_dates:
                 self.request_data["d"] = job_date
-                self.submit_hours()
+                self.submit_hours(self.request_data)
 
         jobs_left = self._get_required_dates()
         if jobs_left:
@@ -175,13 +198,19 @@ class TimeWatcher:
 
     def submit_hours(
         self,
+        data: dict[str, str],
     ) -> None:
+        """Send a post request to fill the hours of a given data.
+
+        :param data: Dictionary containing the data of a single date to be filled.
+        The data is formatted in the cryptic way of Timewatch."""
+
         print(
             colored(
                 consts.SUBMITTING_HOURS_TEXT.format(
-                    date=self.request_data["d"],
-                    start_time=f'{self.request_data["ehh0"]}:{self.request_data["emm0"]}',
-                    end_time=f'{self.request_data["xhh0"]}:{self.request_data["xmm0"]}',
+                    date=data["d"],
+                    start_time=f'{data["ehh0"]}:{data["emm0"]}',
+                    end_time=f'{data["xhh0"]}:{data["xmm0"]}',
                 ),
                 "light_blue",
             ),
@@ -190,21 +219,21 @@ class TimeWatcher:
         res = self.session.post(
             consts.TIMEWATCH_HOUR_UPDATE_URL,
             headers=self.request_headers,
-            # cookies=self.config.cookies,
-            data=self.request_data,
+            data=data,
         )
         if res.text == consts.TIMEWATCH_SET_TIME_ISSUE_TEXT:
             print(
                 colored(
-                    f'{consts.UNABLE_TO_FILL_TEXT}, problematic_date={self.request_data["d"]}',
+                    f'{consts.UNABLE_TO_FILL_TEXT}, problematic_date={data["d"]}',
                     "red",
                 ),
             )
-            self.skip_dates.add(self.request_data["d"])
+            self.skip_dates.add(data["d"])
 
     def fill(
         self,
     ) -> None:
+        """Fill the Timewatch card of the user."""
         self._initilize_timewatch()
         jobs = self._get_required_dates()
         self._fill_dates(jobs)
