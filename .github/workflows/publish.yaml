@@ -1,13 +1,38 @@
 name: Publish TimeWatcher
+
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        type: choice
+        description: Choose release version
+        options:
+          - patch
+          - minor
+          - major
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Update pyproject.toml
+        run: |
+          poetry version ${{ github.event.inputs.version }}
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pyproject.toml
+          git commit -m "Bump ${{ github.event.inputs.version }} version"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and publish to pypi
         uses: JRubics/poetry-publish@v2.0
         with:
