@@ -46,8 +46,7 @@ cd timewatcher
 ```
 Initialize environment using `poetry`
 ```bash
-poetry install --no-root
-pre-commit install
+poetry install --no-root && pre-commit install
 ```
 You can make any changes you want.
 To execute run the `timewatcher` command inside the directory
