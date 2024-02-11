@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -77,16 +78,63 @@ class Config:
                 )
 
         if is_config_updated is True:
-            p = Path(os.path.expanduser(consts.CONFIG_FILE_PATH))
-            p.mkdir(parents=True, exist_ok=True)
-            config.write(open(f"{str(p)}/config.ini", "w"))
-            print(
-                colored(
-                    consts.CONFIGURATION_INITILIZED_TEXT.format(path=str(p)),
-                    "yellow",
-                ),
-            )
-
+            self._initilize_config_file(config)
+        if config[consts.PREFERENCES]["auto_execute"].lower() == "true":
+            filepath = os.path.expanduser(consts.LAUNCH_AGENT_FILE_PATH)
+            if os.path.isfile(filepath) is False:
+                self._initilize_launchd(filepath, config)
         return dict(config[consts.AUTHENTICATION].items()) | dict(
             config[consts.PREFERENCES].items(),
+        )
+
+    def _initilize_config_file(
+        self,
+        config: ConfigParser,
+    ) -> None:
+        """Create the config.ini file in the well-know location for future program calls.
+
+        :param config: ConfigParser object to save to the config.ini file."""
+        p = Path(os.path.expanduser(consts.CONFIG_FILE_PATH))
+        p.mkdir(parents=True, exist_ok=True)
+        config.write(open(f"{str(p)}/config.ini", "w"))
+        print(
+            colored(
+                consts.CONFIGURATION_INITILIZED_TEXT.format(path=str(p)),
+                "yellow",
+            ),
+        )
+
+    def _initilize_launchd(
+        self,
+        filepath: str,
+        config: ConfigParser,
+    ) -> None:
+        """Initilizes the Launchd file with the appropiate configuration.
+        This file is used to run TimeWatcher every "day_to_run" of the month
+        at "hour_to_run" time.
+
+        :param filepath: The path to created the launchd file at.
+        :param config: ConfigParser object with the day_to_execute and hour_to_execute
+        configuration parameters."""
+        day_to_execute, hour_to_execute = config.get(
+            consts.PREFERENCES,
+            "day_to_execute",
+        ), config.get(
+            consts.PREFERENCES,
+            "hour_to_execute",
+        )
+        p = Path(os.path.expanduser(consts.LAUNCH_AGENT_FILE_PATH))
+        p.mkdir(parents=True, exist_ok=True)
+        file_content = consts.LAUNCH_AGENT_FILE_CONTENT.format(
+            day_to_execute=day_to_execute,
+            hour_to_execute=hour_to_execute,
+        )
+        with open(filepath, "w") as f:
+            f.writelines(file_content)
+        subprocess.run(["launchctl", "load", consts.LAUNCH_AGENT_FILE_NAME], check=True)
+        print(
+            colored(
+                consts.LAUNCHD_INITILIZED_TEXT.format(path=filepath),
+                "yellow",
+            ),
         )
