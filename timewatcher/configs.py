@@ -10,7 +10,7 @@ from . import consts
 
 
 class Config:
-    """Configuration manager helper class to initilize configuration
+    """Configuration manager helper class to initialize configuration
     from well known config.ini file and exposing relevant configurations."""
 
     company_number: str
@@ -24,7 +24,7 @@ class Config:
     date_format: str = "%Y-%m-%d"
 
     def __init__(self):
-        configs = self._initilize_configs()
+        configs = self._initialize_configs()
 
         self.company_number = configs["company_number"]
         self.employee_number = configs["employee_number"]
@@ -40,10 +40,10 @@ class Config:
             configs["end_time"],
         )
 
-    def _initilize_configs(
+    def _initialize_configs(
         self,
     ) -> dict[str, any]:
-        """Initilizes the configuration object from a well know location of config.ini file.
+        """Initializes the configuration object from a well know location of config.ini file.
 
         :return: a dict holding all the user configuration settings.
         """
@@ -78,16 +78,16 @@ class Config:
                 )
 
         if is_config_updated is True:
-            self._initilize_config_file(config)
+            self._initialize_config_file(config)
         if config[consts.PREFERENCES]["auto_execute"].lower() == "true":
             filepath = os.path.expanduser(consts.LAUNCH_AGENT_FILE_PATH)
             if os.path.isfile(filepath) is False:
-                self._initilize_launchd(filepath, config)
+                self._initialize_launchd(filepath, config)
         return dict(config[consts.AUTHENTICATION].items()) | dict(
             config[consts.PREFERENCES].items(),
         )
 
-    def _initilize_config_file(
+    def _initialize_config_file(
         self,
         config: ConfigParser,
     ) -> None:
@@ -99,17 +99,17 @@ class Config:
         config.write(open(f"{str(p)}/config.ini", "w"))
         print(
             colored(
-                consts.CONFIGURATION_INITILIZED_TEXT.format(path=str(p)),
+                consts.CONFIGURATION_INITIALIZED_TEXT.format(path=str(p)),
                 "yellow",
             ),
         )
 
-    def _initilize_launchd(
+    def _initialize_launchd(
         self,
         filepath: str,
         config: ConfigParser,
     ) -> None:
-        """Initilizes the Launchd file with the appropiate configuration.
+        """Initializes the Launchd file with the appropiate configuration.
         This file is used to run TimeWatcher every "day_to_run" of the month
         at "hour_to_run" time.
 
@@ -134,7 +134,7 @@ class Config:
         subprocess.run(["launchctl", "load", consts.LAUNCH_AGENT_FILE_NAME], check=True)
         print(
             colored(
-                consts.LAUNCHD_INITILIZED_TEXT.format(path=filepath),
+                consts.LAUNCHD_INITIALIZED_TEXT.format(path=filepath),
                 "yellow",
             ),
         )

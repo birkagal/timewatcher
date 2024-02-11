@@ -35,10 +35,10 @@ class TimeWatcher:
         self.current_date = datetime.now()
         self.skip_dates: set[str] = set()
 
-    def _initilize_timewatch(
+    def _initialize_timewatch(
         self,
     ) -> None:
-        """Kickstart the Timewatch initilization process.
+        """Kickstart the Timewatch initialization process.
         Login to the Timewatch website, and update the session referer to the
         correct URL based on the current date."""
 
@@ -236,6 +236,6 @@ class TimeWatcher:
         self,
     ) -> None:
         """Fill the Timewatch card of the user."""
-        self._initilize_timewatch()
+        self._initialize_timewatch()
         jobs = self._get_required_dates()
         self._fill_dates(jobs)

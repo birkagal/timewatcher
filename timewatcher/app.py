@@ -7,7 +7,7 @@ from .timewatcher import TimeWatcher
 
 def main() -> None:
     """Main function for TimeWatcher.
-    Initilize the TimeWatcher class and fill timewatch using it."""
+    Initializes the TimeWatcher class and fill timewatch using it."""
     print(colored(figlet_format("TimeWatcher", font="standard"), "green"), end="")
     print(colored("Welcome to TimeWatcher by Gal Birka!", "green"))
     timewatcher = TimeWatcher()

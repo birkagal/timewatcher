@@ -18,11 +18,11 @@ SUBMITTING_HOURS_TEXT = (
 UNABLE_TO_FILL_TEXT = (
     "Unable to fill date. Probably a bug on TimeWatch, please verify manually"
 )
-CANT_FIND_CONFIGURATION_TEXT = "Could not find configuration file, initilizing ..."
-CONFIGURATION_INITILIZED_TEXT = (
-    "Configuration file initilized and saved to {path}/config.ini"
+CANT_FIND_CONFIGURATION_TEXT = "Could not find configuration file, initializing ..."
+CONFIGURATION_INITIALIZED_TEXT = (
+    "Configuration file initialized and saved to {path}/config.ini"
 )
-LAUNCHD_INITILIZED_TEXT = "Created new launchd file at {path}"
+LAUNCHD_INITIALIZED_TEXT = "Created new launchd file at {path}"
 # Configurations
 CONFIG_FILE_PATH = "~/Library/Preferences/TimeWatcher"
 AUTHENTICATION = "authentication"
