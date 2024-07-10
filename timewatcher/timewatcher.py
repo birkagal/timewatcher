@@ -14,6 +14,9 @@ from . import configs
 from . import consts
 from . import data
 
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 @dataclass
 class Job:
@@ -59,7 +62,7 @@ class TimeWatcher:
                 "comp": self.config.company_number,
                 "name": self.config.employee_number,
                 "pw": self.config.employee_password,
-            },
+            }, verify=False,
         )
         return BeautifulSoup(res.text, "html.parser")
 
@@ -71,18 +74,21 @@ class TimeWatcher:
         Punch page URL with the relevant params from it. Setting the "referer" header to that
         URL.
 
-        :param: login_soup: BeautifulSoup object of the homepage after singning in."""
+        :param: login_soup: BeautifulSoup object of the homepage after signing in."""
+        pattern = re.compile(r'function\s+' + re.escape(consts.TIMEWATCH_DATE_JS_FUNC) +
+                             r'\s*\([^)]*\)\s*{\s*window\.location\s*=\s*[\'"]([^\'"]+)[\'"]\s*;?\s*}', re.DOTALL)
         link = next(
-            link
-            for link in login_soup.find_all("a", {"class": "new-link"})
-            if consts.UPDATE_HOURS_LINK_TEXT in link.text
+            (match.group(1)
+             for script in login_soup.find_all('script', {"language": "javascript"})
+             if script.string and (match := pattern.search(script.string)))
         )
-        parsed_url = urlparse(link.get("href"))
+
+        parsed_url = urlparse(link)
         params = parse_qs(parsed_url.query)
         ixemplee = params["ee"][0] if params.get("ee") else ""
         self.request_data["e"] = ixemplee
         self.request_data["tl"] = ixemplee
-        self.request_headers["referer"] = link.get("href")
+        self.request_headers["referer"] = link
 
     def _update_request_data(
         self,
@@ -119,7 +125,7 @@ class TimeWatcher:
         dates table rows and find dates that need to be filled in.
         Extract the date and required hours and store them in a Jobs list.
 
-        :return: Job list of the required dates that needs to be filled.."""
+        :return: Job list of the required dates that needs to be filled."""
 
         punch_page = self._get_punch_page()
         jobs: list[Job] = []
@@ -154,11 +160,11 @@ class TimeWatcher:
         retries=0,
     ) -> None:
         """Iterate over the jobs list and fill the required hours for each job.
-        Call itself recusively if not all the jobs have been filled. Can be called
+        Call itself recursively if not all the jobs have been filled. Can be called
         up to a maximum of 5 retries before failing.
 
         :param jobs: List of jobs that require filling up.
-        :param retreis: Number of retries that attempted to fulfill the jobs list."""
+        :param retries: Number of retries that attempted to fulfill the jobs list."""
 
         MAX_RETRIES = 5
         if retries > MAX_RETRIES:
@@ -202,7 +208,7 @@ class TimeWatcher:
         self,
         data: dict[str, str],
     ) -> None:
-        """Send a post request to fill the hours of a given data.
+        """Send a post request to fill the hours with a given data.
 
         :param data: Dictionary containing the data of a single date to be filled.
         The data is formatted in the cryptic way of Timewatch."""

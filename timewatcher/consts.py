@@ -3,6 +3,7 @@ TIMEWATCH_BASE_URL = "https://c.timewatch.co.il"
 TIMEWATCH_USER_VALIDATION_URL = "https://c.timewatch.co.il/user/validate_user.php"
 TIMEWATCH_DATE_TABLE_URL = "https://c.timewatch.co.il/punch/editwh.php"
 TIMEWATCH_HOUR_UPDATE_URL = "https://c.timewatch.co.il/punch/editwh3.php"
+TIMEWATCH_DATE_JS_FUNC = "updateAttendance"
 # Strings
 UPDATE_HOURS_LINK_TEXT = "עדכון נתוני נוכחות"
 HOURS_UPDATE_REQUIRED_TEXT = "חסרה כניסה/יציאה"
