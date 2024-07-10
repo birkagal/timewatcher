@@ -10,6 +10,7 @@ def main() -> None:
     Initializes the TimeWatcher class and fill timewatch using it."""
     print(colored(figlet_format("TimeWatcher", font="standard"), "green"), end="")
     print(colored("Welcome to TimeWatcher by Gal Birka!", "green"))
+    print(colored("Maintained by Idan Bush", "green"))
     timewatcher = TimeWatcher()
     timewatcher.fill()
 
