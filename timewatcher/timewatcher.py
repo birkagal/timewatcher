@@ -72,17 +72,20 @@ class TimeWatcher:
         URL.
 
         :param: login_soup: BeautifulSoup object of the homepage after singning in."""
-        link = next(
-            link
-            for link in login_soup.find_all("a", {"class": "new-link"})
-            if consts.UPDATE_HOURS_LINK_TEXT in link.text
+
+        script_tag = login_soup.find(
+            "script",
+            text=re.compile(r"function updateAttendance"),
         )
-        parsed_url = urlparse(link.get("href"))
-        params = parse_qs(parsed_url.query)
+        url_pattern = re.compile(
+            r'window\.location\s*=\s*"(/punch/editwh\.php\?[^"]+)"',
+        )
+        url = url_pattern.search(script_tag.string).group(1)
+        params = parse_qs(url.split("?")[1])
         ixemplee = params["ee"][0] if params.get("ee") else ""
         self.request_data["e"] = ixemplee
         self.request_data["tl"] = ixemplee
-        self.request_headers["referer"] = link.get("href")
+        self.request_headers["referer"] = url
 
     def _update_request_data(
         self,
