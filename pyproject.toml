@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "timewatcher"
-version = "2.1.0"
+version = "2.2.0"
 description = "Automatically update hours card on TimeWatch"
 authors = ["Gal Birka <birkagal@gmail.com>"]
 license = "MIT"
