@@ -14,9 +14,6 @@ from . import configs
 from . import consts
 from . import data
 
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 @dataclass
 class Job:
@@ -62,7 +59,8 @@ class TimeWatcher:
                 "comp": self.config.company_number,
                 "name": self.config.employee_number,
                 "pw": self.config.employee_password,
-            }, verify=False,
+            },
+            verify=False,
         )
         return BeautifulSoup(res.text, "html.parser")
 
@@ -75,12 +73,18 @@ class TimeWatcher:
         URL.
 
         :param: login_soup: BeautifulSoup object of the homepage after signing in."""
-        pattern = re.compile(r'function\s+' + re.escape(consts.TIMEWATCH_DATE_JS_FUNC) +
-                             r'\s*\([^)]*\)\s*{\s*window\.location\s*=\s*[\'"]([^\'"]+)[\'"]\s*;?\s*}', re.DOTALL)
+        pattern = re.compile(
+            r"function\s+"
+            + re.escape(consts.TIMEWATCH_DATE_JS_FUNC)
+            + r'\s*\([^)]*\)\s*{\s*window\.location\s*=\s*[\'"]([^\'"]+)[\'"]\s*;?\s*}',
+            re.DOTALL,
+        )
         link = next(
-            (match.group(1)
-             for script in login_soup.find_all('script', {"language": "javascript"})
-             if script.string and (match := pattern.search(script.string)))
+            (
+                match.group(1)
+                for script in login_soup.find_all("script", {"language": "javascript"})
+                if script.string and (match := pattern.search(script.string))
+            )
         )
 
         parsed_url = urlparse(link)
