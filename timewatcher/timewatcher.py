@@ -191,7 +191,7 @@ class TimeWatcher:
         if jobs_left:
             print(
                 colored(
-                    f"consts.MISSING_DATES_RETRY_TEXT, jobs_left={len(jobs_left)}",
+                    f"{consts.MISSING_DATES_RETRY_TEXT}, jobs_left={len(jobs_left)}",
                     "light_blue",
                 ),
             )
